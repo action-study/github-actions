@@ -8,10 +8,8 @@ inputs:
       생성된 PR 정보를 가져오기 위한 context 입니다.
       e.g.
       format(
-        '{{ "user": {0}, "title": {1}, "url": {2} }}',
-        toJSON(github.event.pull_request.user),
-        toJSON(github.event.pull_request.title),
-        toJSON(github.event.pull_request.html_url)
+        '{{ "title": {0} }}',
+        toJSON(github.event.pull_request.title)
       )
 
 runs:
