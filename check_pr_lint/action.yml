@@ -1,0 +1,27 @@
+name: Check PR Lint
+description: PR 등록 시, 변경된 파일들이 ESLint 규칙에 맞는지 확인합니다.
+
+inputs:
+  appId:
+    description: 앱 인증 ID
+    required: true
+  installationId:
+    description: 앱 설치 인증 ID
+    required: true
+  baseRef:
+    description: 타겟 브랜치의 베이스 브랜치
+    required: true
+    default: ${{ github.base_ref }}
+  pullRequest:
+    description: >
+      생성된 PR의 정보를 가져오기 위한 context 입니다.
+      e.g.
+      format(
+        '{{ "user": {0}, "title": {1}, "url": {2} }}',
+        toJSON(github.event.pull_request.user),
+      )
+    required: true
+
+runs:
+  using: node20
+  main: dist/index.js
