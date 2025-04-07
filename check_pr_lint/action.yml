@@ -49,7 +49,9 @@ runs:
       id: changed-files
       shell: bash
       run: |
-        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ inputs.baseName }} | grep -E '${{ inputs.filePattern }}' | tr '\n' ' ')
+        echo "${{ inputs.filePattern }}"
+        FILE_PATTERN="${{ inputs.filePattern }}"
+        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ inputs.baseName }} | grep -E "$FILE_PATTERN" | tr '\n' ' ')
         echo "files=${CHANGED_FILES}" >> $GITHUB_OUTPUT
         echo "Changed files: ${CHANGED_FILES}"
 
