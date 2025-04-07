@@ -74,6 +74,7 @@ runs:
       with:
         GITHUB_TOKEN: ${{ inputs.githubToken }}
         report-json: lint_report.json
+      continue-on-error: true
 
     - name: On Failed
       if: steps.lint.outcome == 'failure' && steps.changed-files.outputs.changedFiles != ''
