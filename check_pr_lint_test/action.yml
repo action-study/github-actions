@@ -8,7 +8,7 @@ inputs:
   installationId:
     description: 앱 설치 인증 ID
     required: true
-  baseRef:
+  baseName:
     description: 타겟 브랜치의 베이스 브랜치
     required: true
     default: ${{ github.base_ref }}

@@ -1,15 +1,20 @@
 import core from '@actions/core'
 import { octokit } from './octokit'
+import { execSync } from 'child_process'
 
 const pullRequest = JSON.parse(
   core.getInput('pullRequest', { required: true })
 )
-const baseRef = JSON.parse(
+const baseName = JSON.parse(
   core.getInput('base_ref', { required: true })
 )
 
 const checkLint = () => {
-  const github = octokit.rest
+  console.log(`Base branch is ${baseName}`)
+
+  execSync(`git fetch origin ${baseName}:refs/remotes/origin/${baseName}`)
+
+  
 
   console.log('baseRef: ', baseRef)
   console.log('pullRequest: ', pullRequest)

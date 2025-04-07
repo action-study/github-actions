@@ -1,0 +1,59 @@
+name: Check PR Lint
+description: PR 생성 시, 변경된 파일들이 ESLint 규칙에 맞는지 확인합니다.
+inputs:
+  privateKey:
+    description: >
+      Github authentication에 필요한 App의 PAT입니다.
+      e.g. secrets.APP_TOKEN
+  filePattern:
+    description: 린트 검사할 파일의 패턴
+    default: '^src/.*\.(js|ts|vue)$'
+  pullRequest:
+    dscription: >
+      생성된 PR의 정보를 가져오기 위한 context 입니다.
+      e.g.
+      format(
+        '{{ "baseName": {0}, "title": {1}, "url": {2} }}',
+        toJSON(github.base_ref),
+        toJSON(github.event.pull_request.title),
+        toJSON(github.event.pull_request.html_url)
+      )
+
+runs:
+  using: "composite"
+  steps:
+    - name: Fetch Base Branch
+      shell: bash
+      run: |
+        git fetch origin ${{ inputs.pullRequest.baseName }}:refs/remotes/origin/${{ inputs.pullRequest.baseName }}
+        echo "Base branch is ${{ inputs.pullRequest.baseName }}"
+
+    - name: Get Changed Files
+      id: changed-files
+      shell: bash
+      run: |
+        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ inputs.pullRequest.baseName }} | grep -E '${{ inputs.file-pattern }}' | tr '\n' ' ')
+        echo "files=${CHANGED_FILES}" >> $GITHUB_OUTPUT
+        echo "Changed files: ${CHANGED_FILES}"
+
+    - name: Run ESLint
+      id: lint
+      if: steps.changed-files.outputs.files
+      shell: bash
+      run: |
+        npx eslint ${{ steps.changed-files.outputs.files }}
+      continue-on-error: true
+
+    - name: Save ESLint Results
+      if: steps.lint.outcome == 'failure' && steps.changed-files.outputs.files
+      shell: bash
+      run: |
+        npx eslint --output-file lint_report.json --format json ${{ steps.changed-files.outputs.files }}
+      continue-on-error: true
+
+    - name: Annotate ESLint Results
+      if: steps.lint.outcome == 'failure' && steps.changed-files.outputs.files
+      uses: ataylorme/eslint-annotate-action@v3
+      with:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        report-json: lint_report.json
