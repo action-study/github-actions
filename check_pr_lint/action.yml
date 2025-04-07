@@ -45,31 +45,24 @@ runs:
         git fetch origin ${{ inputs.baseName }}:refs/remotes/origin/${{ inputs.baseName }}
         echo "Base branch is ${{ inputs.baseName }}"
 
-    - name: Get Changed Files
-      id: changed-files
-      shell: bash
-      run: |
-        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ inputs.baseName }} | grep -E '${{ inputs.filePattern }}' || true | tr '\n' ' ')
-        echo "files=${CHANGED_FILES}" >> $GITHUB_OUTPUT
-        echo "Changed files: ${CHANGED_FILES}"
-
     - name: Run ESLint
       id: lint
-      if: steps.changed-files.outputs.files
       shell: bash
       run: |
-        npx eslint ${{ steps.changed-files.outputs.files }}
+        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ inputs.baseName }} | grep -E '${{ inputs.filePattern }}')
+        echo "Changed files: $CHANGED_FILES"
+        npx eslint $CHANGED_FILES
       continue-on-error: true
 
     - name: Save ESLint Results
-      if: steps.lint.outcome == 'failure' && steps.changed-files.outputs.files
+      if: steps.lint.outcome == 'failure'
       shell: bash
       run: |
-        npx eslint --output-file lint_report.json --format json ${{ steps.changed-files.outputs.files }}
+        npx eslint --output-file lint_report.json --format json $CHANGED_FILES
       continue-on-error: true
 
     - name: Annotate ESLint Results
-      if: steps.lint.outcome == 'failure' && steps.changed-files.outputs.files
+      if: steps.lint.outcome == 'failure'
       uses: ataylorme/eslint-annotate-action@v3
       with:
         GITHUB_TOKEN: ${{ inputs.githubToken }}
