@@ -50,7 +50,7 @@ runs:
       shell: bash
       run: |
         CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ inputs.baseName }} | grep -E "${{ inputs.filePattern }}" || echo "")
-        echo "::set-output name=changedFiles::$CHANGED_FILES"
+        echo "::save-state name=changedFiles::$CHANGED_FILES"
 
     - name: Run ESLint
       id: lint
