@@ -12,7 +12,7 @@ inputs:
   baseName: 
     description: >
       타겟 브랜치의 베이스 브랜치
-      e.g. ${{ github.base_ref }}
+      e.g. github.base_ref
   pullRequest:
     description: >
       생성된 PR의 정보를 가져오기 위한 context 입니다.
