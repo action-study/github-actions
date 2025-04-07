@@ -1,10 +1,10 @@
 name: Check PR Lint
 description: PR 생성 시, 변경된 파일들이 ESLint 규칙에 맞는지 확인합니다.
 inputs:
-  privateKey:
+  githubToken:
     description: >
       Github authentication에 필요한 App의 PAT입니다.
-      e.g. secrets.APP_TOKEN
+      e.g. secrets.GITHUB_TOKEN
   filePattern:
     description: >
       린트 검사할 파일의 패턴
@@ -72,5 +72,5 @@ runs:
       if: steps.lint.outcome == 'failure' && steps.changed-files.outputs.files
       uses: ataylorme/eslint-annotate-action@v3
       with:
-        GITHUB_TOKEN: ${{ inputs.privateKey }}
+        GITHUB_TOKEN: ${{ inputs.githubToken }}
         report-json: lint_report.json
