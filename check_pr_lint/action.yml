@@ -45,25 +45,45 @@ runs:
         git fetch origin ${{ inputs.baseName }}:refs/remotes/origin/${{ inputs.baseName }}
         echo "Base branch is ${{ inputs.baseName }}"
 
-    - name: Run ESLint
-      id: lint
+    - name: Get Changed Files
+      id: changed-files
       shell: bash
       run: |
-        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ inputs.baseName }} | grep -E '${{ inputs.filePattern }}')
-        echo "Changed files: $CHANGED_FILES"
+        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ inputs.baseName }} | grep -E "${{ inputs.filePattern }}" || echo "")
+        echo "::set-output name=changedFiles::$CHANGED_FILES"
+
+    - name: Run ESLint
+      id: lint
+      if: steps.changed-files.outputs.changedFiles != ''
+      shell: bash
+      run: |
+        echo "Changed files are: ${{ steps.check.outputs.changedFiles }}"
         npx eslint $CHANGED_FILES
       continue-on-error: true
 
     - name: Save ESLint Results
-      if: steps.lint.outcome == 'failure'
+      if: steps.lint.outcome == 'failure' && steps.changed-files.outputs.changedFiles != ''
       shell: bash
       run: |
         npx eslint --output-file lint_report.json --format json $CHANGED_FILES
       continue-on-error: true
 
     - name: Annotate ESLint Results
-      if: steps.lint.outcome == 'failure'
+      if: steps.lint.outcome == 'failure' && steps.changed-files.outputs.changedFiles != ''
       uses: ataylorme/eslint-annotate-action@v3
       with:
         GITHUB_TOKEN: ${{ inputs.githubToken }}
         report-json: lint_report.json
+
+    - name: On Failed
+      if: steps.lint.outcome == 'failure' && steps.changed-files.outputs.changedFiles != ''
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ inputs.githubToken }}
+        script: |
+          github.rest.issues.createComment({
+            repo: context.repo.repo,
+            owner: context.repo.owner,
+            issue_number: context.issue.number,
+            body: ':warning: ESLint 오류가 발생했습니다.',
+          })
