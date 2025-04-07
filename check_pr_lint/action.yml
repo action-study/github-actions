@@ -9,6 +9,10 @@ inputs:
     description: >
       린트 검사할 파일의 패턴
       e.g. '^src/.*\.(js|ts|vue)$'
+  baseName: 
+    description: >
+      타겟 브랜치의 베이스 브랜치
+      e.g. ${{ github.base_ref }}
   pullRequest:
     description: >
       생성된 PR의 정보를 가져오기 위한 context 입니다.
@@ -38,14 +42,14 @@ runs:
     - name: Fetch Base Branch
       shell: bash
       run: |
-        git fetch origin ${{ inputs.pullRequest.baseName }}:refs/remotes/origin/${{ inputs.pullRequest.baseName }}
-        echo "Base branch is ${{ inputs.pullRequest.baseName }}"
+        git fetch origin ${{ inputs.baseName }}:refs/remotes/origin/${{ inputs.baseName }}
+        echo "Base branch is ${{ inputs.baseName }}"
 
     - name: Get Changed Files
       id: changed-files
       shell: bash
       run: |
-        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ inputs.pullRequest.baseName }} | grep -E '${{ inputs.file-pattern }}' | tr '\n' ' ')
+        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ inputs.baseName }} | grep -E '${{ inputs.filePattern }}' | tr '\n' ' ')
         echo "files=${CHANGED_FILES}" >> $GITHUB_OUTPUT
         echo "Changed files: ${CHANGED_FILES}"
 
@@ -68,5 +72,5 @@ runs:
       if: steps.lint.outcome == 'failure' && steps.changed-files.outputs.files
       uses: ataylorme/eslint-annotate-action@v3
       with:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
+        GITHUB_TOKEN: ${{ inputs.privateKey }}
         report-json: lint_report.json
