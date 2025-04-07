@@ -6,10 +6,11 @@ inputs:
       Github authentication에 필요한 App의 PAT입니다.
       e.g. secrets.APP_TOKEN
   filePattern:
-    description: 린트 검사할 파일의 패턴
-    default: '^src/.*\.(js|ts|vue)$'
+    description: >
+      린트 검사할 파일의 패턴
+      e.g. '^src/.*\.(js|ts|vue)$'
   pullRequest:
-    dscription: >
+    description: >
       생성된 PR의 정보를 가져오기 위한 context 입니다.
       e.g.
       format(
